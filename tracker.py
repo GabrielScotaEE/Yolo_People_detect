@@ -2,14 +2,14 @@ import math
 
 
 class EuclideanDistTracker:
-    def __init__(self, maxDisappeared=10):
+    def __init__(self, maxDisappeared=40):
         # Store the center positions of the objects
         self.center_points = {}
+        self.disappeared = {}
         # Keep the count of the IDs
         # each time a new object id detected, the count will increase by one
         self.id_count = 0
         self.maxDisappeared = maxDisappeared
-
 
     
     def update(self, objects_rect):
@@ -29,8 +29,9 @@ class EuclideanDistTracker:
                 
                 dist = math.hypot(cx - pt[0], cy - pt[1])
 
-                if dist < 10:
+                if dist < 20:
                     self.center_points[id] = (cx, cy)
+                    self.disappeared[id] = 0
                     #print(self.center_points)
                     objects_bbs_ids.append([x, y, w, h, id])
                     same_object_detected = True
@@ -39,22 +40,42 @@ class EuclideanDistTracker:
             # New object is detected we assign the ID to that object
             if same_object_detected is False:
                 self.center_points[self.id_count] = (cx, cy)
+                self.disappeared[self.id_count] = 0
                 objects_bbs_ids.append([x, y, w, h, self.id_count])
                 self.id_count += 1
-          
-       
+        cleaner_list = [] 
+         
 
-        # # Clean the dictionary by center points to remove IDS not used anymore
-        # new_center_points = {}
-        # for obj_bb_id in objects_bbs_ids:
-        #     _, _, _, _, object_id = obj_bb_id
-        #     center = self.center_points[object_id]
-        #     new_center_points[object_id] = center
+        # Clean the dictionary by center points to remove IDS not used anymore
+        self.current_center_points = {}
+        for obj_bb_id in objects_bbs_ids:
+            _, _, _, _, object_id = obj_bb_id
+            center = self.center_points[object_id]
+            self.current_center_points[object_id] = center
 
-        # # Update dictionary with IDs not used removed
-        # self.center_points = new_center_points.copy()
+        # Comparing last frame with the current frame ids
+        for ids, wt in self.center_points.items():
+            sucess = self.current_center_points.get(ids)
+            if sucess is None:
+                self.disappeared[ids] = self.disappeared[ids] + 1
+                if self.disappeared[ids] > self.maxDisappeared:
+                    cleaner_list.append(ids)
+        
+        for clean in cleaner_list:
+            del self.disappeared[clean]
+            del self.center_points[clean]
+            
+
+        # Update dictionary with IDs not used removed
+        #self.center_points = self.current_center_points.copy()
         
         return objects_bbs_ids
 
 
-
+# test = EuclideanDistTracker()
+# test.update([[52, 304, 79, 415], [190, 30, 204, 88], [314, 12, 334, 70]])
+# #print(test.center_points)
+# print(test.current_center_points)
+# test.update([[52, 304, 79, 415], [190, 30, 204, 88]])
+# #print(test.center_points)
+# print(test.current_center_points)
