@@ -1,8 +1,8 @@
 import math
-
+from itertools import chain
 
 class EuclideanDistTracker:
-    def __init__(self, maxDisappeared=40):
+    def __init__(self, maxDisappeared=35):
         # Store the center positions of the objects
         self.center_points = {}
         self.disappeared = {}
@@ -29,7 +29,7 @@ class EuclideanDistTracker:
                 
                 dist = math.hypot(cx - pt[0], cy - pt[1])
 
-                if dist < 20:
+                if dist < 18:
                     self.center_points[id] = (cx, cy)
                     self.disappeared[id] = 0
                     #print(self.center_points)
@@ -60,6 +60,22 @@ class EuclideanDistTracker:
                 self.disappeared[ids] = self.disappeared[ids] + 1
                 if self.disappeared[ids] > self.maxDisappeared:
                     cleaner_list.append(ids)
+        # Search for repeated centers in center_points
+        flipped = {}
+        # this for returns exemple: final_dictionary {(20, 30): [1, 11, 15], (25, 17): [5], (50, 40): [7, 10]}
+        for key, value in self.center_points.items():
+            if value not in flipped:
+                flipped[value] = [key]
+            else:
+                flipped[value].append(key)
+        # We just need dict.values() > 1
+        for repeated in flipped.values():
+            if len(repeated)>1:
+                repeated.pop(-1)
+                for sep in repeated:
+                    cleaner_list.append(sep)
+  
+
         
         for clean in cleaner_list:
             del self.disappeared[clean]
