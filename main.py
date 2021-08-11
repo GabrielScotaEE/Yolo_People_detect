@@ -59,7 +59,7 @@ for i in range(int(totalFrames)):
     # Call GaD class, drawBBoxes function to draw the bb around the objects
     # You must call drawBBoxes_with_ID if u wanna track objects
     # Otherwise just call drawBBoxes.
-    frame_resized = GaD.drawBBoxes_with_ID(choose, frame_resized,count,video,bb_id,tracker=True)
+    frame_resized = GaD.drawBBoxes_with_ID(choose,frame_resized,video,bb_id)
 
     cv.imshow('framerez',frame_resized)
 
