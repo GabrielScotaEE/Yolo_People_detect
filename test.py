@@ -1,84 +1,73 @@
-import torch
-import cv2 as cv
-from scipy.spatial import distance as dist
-from collections import OrderedDict
-import numpy as np
-from collections import OrderedDict
+from itertools import chain
+
+from torch._C import Size
+
+# for id, pt in center_points.items():
+#     print (id)
+#     print (pt)
 
 
-# Model
-model = torch.hub.load('ultralytics/yolov5', 'custom','./yolo_people_detect/models/yolov5s84newdataset.pt')  # or yolov5m, yolov5x, custom
+
+# test = center_points.get(0)
+# if test is None:
+#     print ('Boa!')
+# else:
+#     print ('No tiene!')
 
 
-img = cv.imread('./yolo_people_detect/images/squad2.jpg')
-results = model(img)
-#results.show()
-info_results = results.xyxy[0].numpy()
-print(len(info_results))
-print(info_results)
-# print(info_results[0][5])vvbbcx     
-inputCentroids = OrderedDict()
-#results.show()
+# rev_dict = {}
+# for key, value in center_points.items():
+#     rev_dict.setdefault(value, set()).add(key)
+  
+  
+# output = set(chain.from_iterable(
+#          values for key, values in rev_dict.items()
+#          if len(values) > 1))
+  
+# # printing result
+# print("resultant key", str(output))
 
-if len(info_results) is not None:
-    print("Detected something")
-    #If was a person
-    for i in range (len(info_results)):
-        if info_results[i][5] >= 0 and info_results[i][4]>0.30:
-            x1 = int(info_results[i][0])
-            y1 = int(info_results[i][1])
-            x2 = int(info_results[i][2]) # altura
-            y2 = int(info_results[i][3]) # largura
 
-            cX = int((x1 + x2) / 2.0)
-            cY = int((y1 + y2) / 2.0)
-            inputCentroids[i] = (cX, cY)
+# print(list(output))
 
-            cv.putText(img,'1',(10,70),cv.FONT_HERSHEY_COMPLEX,2,(50,100,200),3)
-            cv.rectangle(img, (x1, y1),(x2, y2), (230, 0, 150), 2)
-    cv.imshow('Frame', img)
-    cv.waitKey(0)       
+center_points = {}
+cx = (347 + 510) // 2
+cy = (337 + 442) // 2
+# center_points[0] = (cx, cy)
+center_points[1] = (20, 30)
+center_points[5] = (25, 17)
+center_points[7]= (50, 40)
+center_points[10]= (50, 40)
+center_points[11] = (20, 30)
+center_points[15] = (20, 30)
 
-print(inputCentroids)    
 
-print(inputCentroids.keys())    
+print('\n{}\n'.format(center_points))
 
-print(inputCentroids.values())  
+print('{}\n'.format(center_points.items()))
 
-objects = inputCentroids
+flipped = {}
+  
+for key, value in center_points.items():
+    
+    if value not in flipped:
+        flipped[value] = [key]
+    else:
+        flipped[value].append(key)
+  
+# printing result
+print("final_dictionary", str(flipped))
+cleaner_list = []
 
-objectIDs = list(objects.keys())
-objectIDs = list(objects.keys())
-objectCentroids = list(objects.values())
-
-D = dist.cdist(list(inputCentroids.values()), list(inputCentroids.values()))
-print('print distances:\n{}'.format(D))
-print('print shapes of D:\n {} {}'.format(D.shape[0],D.shape[1]))
-rows = D.min(axis=1).argsort()
-cols = D.argmin(axis=1)[rows]
-print(rows,cols)
-usedRows = set()
-usedCols = set()  
-
-for (row, col) in zip(rows, cols):
-        # if we have already examined either the row or
-        # column value before, ignore it
-        # val
-        if row in usedRows or col in usedCols:
-            continue
-        # otherwise, grab the object ID for the current row,
-        # set its new centroid, and reset the disappeared
-        # counter
-        objectID = objectIDs[row]
-        objects[objectID] = inputCentroids[col]
-        #disappeared[objectID] = 0
-        # indicate that we have examined each of the row and
-        # column indexes, respectively
-        usedRows.add(row)
-        usedCols.add(col)
-print('objectid --- usedrows and usedcols')
-print (objectID)
-print(usedRows,usedCols)
-unusedRows = set(range(0, D.shape[0])).difference(usedRows)
-unusedCols = set(range(0, D.shape[1])).difference(usedCols)
-print('unused \n {} {}'.format(usedRows,unusedCols))
+for repeated in flipped.values():
+    if len(repeated)>1:
+        
+        repeated.pop(-1)
+        
+        for sep in repeated:
+            cleaner_list.append(sep)
+        
+        
+print(cleaner_list)            
+for clean in cleaner_list:
+    print (clean)

@@ -29,7 +29,7 @@ class EuclideanDistTracker:
                 
                 dist = math.hypot(cx - pt[0], cy - pt[1])
 
-                if dist < 18:
+                if dist < 20:
                     self.center_points[id] = (cx, cy)
                     self.disappeared[id] = 0
                     #print(self.center_points)
