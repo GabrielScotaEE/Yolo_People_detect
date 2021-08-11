@@ -7,7 +7,7 @@ class EuclideanDistTracker:
         self.center_points = {}
         self.disappeared = {}
         # Keep the count of the IDs
-        # each time a new object id detected, the count will increase by one
+        # every time a new object id detected, the count will increase by one
         self.id_count = 0
         self.maxDisappeared = maxDisappeared
 
@@ -43,9 +43,9 @@ class EuclideanDistTracker:
                 self.disappeared[self.id_count] = 0
                 objects_bbs_ids.append([x, y, w, h, self.id_count])
                 self.id_count += 1
-        cleaner_list = [] 
-         
 
+        self.cleaner_list = [] 
+         
         # Clean the dictionary by center points to remove IDS not used anymore
         self.current_center_points = {}
         for obj_bb_id in objects_bbs_ids:
@@ -59,7 +59,12 @@ class EuclideanDistTracker:
             if sucess is None:
                 self.disappeared[ids] = self.disappeared[ids] + 1
                 if self.disappeared[ids] > self.maxDisappeared:
-                    cleaner_list.append(ids)
+                    self.cleaner_list.append(ids)
+                    
+        for clean in self.cleaner_list:
+            del self.disappeared[clean]
+            del self.center_points[clean]
+            
         # Search for repeated centers in center_points
         flipped = {}
         # this for returns exemple: final_dictionary {(20, 30): [1, 11, 15], (25, 17): [5], (50, 40): [7, 10]}
@@ -73,13 +78,12 @@ class EuclideanDistTracker:
             if len(repeated)>1:
                 repeated.pop(-1)
                 for sep in repeated:
-                    cleaner_list.append(sep)
+                    self.cleaner(sep)
+                    # self.cleaner_list.append(sep)
   
 
         
-        for clean in cleaner_list:
-            del self.disappeared[clean]
-            del self.center_points[clean]
+        
             
 
         # Update dictionary with IDs not used removed
@@ -87,6 +91,12 @@ class EuclideanDistTracker:
         
         return objects_bbs_ids
 
+
+    def cleaner (self, ids):
+        
+        del self.disappeared[ids]
+        del self.center_points[ids]
+        pass
 
 # test = EuclideanDistTracker()
 # test.update([[52, 304, 79, 415], [190, 30, 204, 88], [314, 12, 334, 70]])
