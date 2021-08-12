@@ -2,7 +2,7 @@ import math
 from itertools import chain
 
 class EuclideanDistTracker:
-    def __init__(self, maxDisappeared=35):
+    def __init__(self, maxDisappeared=37):
         # Store the center positions of the objects
         self.center_points = {}
         self.disappeared = {}
@@ -32,7 +32,7 @@ class EuclideanDistTracker:
                 if dist < 20:
                     self.center_points[id] = (cx, cy)
                     self.disappeared[id] = 0
-                    #print(self.center_points)
+                    
                     objects_bbs_ids.append([x, y, w, h, id])
                     same_object_detected = True
                     
@@ -45,22 +45,29 @@ class EuclideanDistTracker:
                 self.id_count += 1
 
         self.cleaner_list = [] 
-         
+        self.copy_center_points ={}
         # Clean the dictionary by center points to remove IDS not used anymore
         self.current_center_points = {}
         for obj_bb_id in objects_bbs_ids:
             _, _, _, _, object_id = obj_bb_id
             center = self.center_points[object_id]
             self.current_center_points[object_id] = center
-
+        
         # Comparing last frame with the current frame ids
         for ids, wt in self.center_points.items():
+            self.copy_center_points = self.center_points.copy()
+            self.copy_disappeared = self.disappeared.copy()
             sucess = self.current_center_points.get(ids)
             if sucess is None:
                 self.disappeared[ids] = self.disappeared[ids] + 1
                 if self.disappeared[ids] > self.maxDisappeared:
                     self.cleaner_list.append(ids)
-                    
+                    # del self.copy_disappeared[ids]
+                    # del self.copy_center_points
+
+        # self.disappeared = self.copy_disappeared
+        # self.center_points =  self.copy_center_points 
+            
         for clean in self.cleaner_list:
             del self.disappeared[clean]
             del self.center_points[clean]
@@ -79,12 +86,8 @@ class EuclideanDistTracker:
                 repeated.pop(-1)
                 for sep in repeated:
                     self.cleaner(sep)
-                    # self.cleaner_list.append(sep)
-  
-
-        
-        
-            
+                    
+ 
 
         # Update dictionary with IDs not used removed
         #self.center_points = self.current_center_points.copy()

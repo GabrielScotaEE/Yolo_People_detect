@@ -9,7 +9,7 @@ choose = 1
 
 if choose == 1:  
 # Model
-    model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5x, custom
+    model = torch.hub.load('ultralytics/yolov5', 'yolov5x')  # or yolov5m, yolov5x, custom
 # Custom Model
 else: 
     model = torch.hub.load('ultralytics/yolov5', 'custom','./yolo_people_detect/models/yolov5x99.pt')
@@ -28,12 +28,12 @@ totalFrames = cap.get(cv.CAP_PROP_FRAME_COUNT)
 h = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
 w= int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
 parameter = cv.VideoWriter_fourcc(*'MP4V')
-video = cv.VideoWriter('test2_fullres-peoples-yolov5s.mp4', parameter,30,(1300,700), isColor =True)
+video = cv.VideoWriter('test2_fullres-peoples-yolov5x.mp4', parameter,30,(1300,700), isColor =True)
 
 if (cap.isOpened()== False):
     print("Error opening video file")
 
-
+ini = time.time()
 for i in range(int(totalFrames)):
     
     # Capture frame-by-frame
@@ -65,7 +65,9 @@ for i in range(int(totalFrames)):
 
     if(cv.waitKey(1) == ord("q")):
             break
-     
+fim = time.time()
+
+print('O codigo demorou: {}segundos'.format(fim-ini))
         
 
 cap.release()
